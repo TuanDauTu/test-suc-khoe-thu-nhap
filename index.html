@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sức Khỏe Thu Nhập Cá Nhân</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Identity (Optional for real implem) -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/phase-header.css">
+    <link rel="stylesheet" href="css/form.css">
+</head>
+
+<body>
+
+    <div class="app-container">
+        <!-- LEFT PANEL: RADAR CHART -->
+        <div class="chart-panel">
+            <h2 class="chart-title"><i class="fa-solid fa-chart-pie"></i> 10 khía cạnh đánh giá SỨC KHỎE THU NHẬP</h2>
+            <div
+                style="position: relative; height: 100%; width: 100%; display: flex; justify-content: center; align-items: center;">
+                <canvas id="radarChart"></canvas>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: INTERACTION -->
+        <div class="interaction-panel">
+
+            <!-- VIEW 1: LOGIN -->
+            <div id="view-login" class="card login-view">
+                <h1>Bác Sĩ Tài Chính</h1>
+                <p style="color: var(--text-muted); margin: 1rem 0;">
+                    Đánh giá sức khỏe thu nhập cá nhân của bạn qua 10 khía cạnh
+                </p>
+                <div style="margin: 2rem 0;">
+                    <i class="fa-solid fa-user-doctor" style="font-size: 4rem; color: var(--primary-color);"></i>
+                </div>
+                <div class="login-form-container" style="max-width: 320px; margin: 0 auto;">
+                    <input type="text" id="user-name" placeholder="Họ và tên của bạn" class="form-input" required>
+                    <input type="email" id="user-email" placeholder="Địa chỉ Email" class="form-input" required>
+                    <p
+                        style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem; margin-top: -0.5rem; text-align: left; padding-left: 0.5rem;">
+                        *Nhập đúng email để nhận được báo cáo đánh giá
+                    </p>
+
+                    <button id="btn-login" class="btn-google"
+                        style="justify-content: center; width: 100%; margin-top: 0.5rem;">
+                        Bắt đầu đánh giá
+                    </button>
+                </div>
+                <!-- 
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem;">
+                    *Dữ liệu của bạn được bảo mật tuyệt đối.
+                </p> 
+                -->
+            </div>
+
+            <!-- VIEW 2: INTRO/PRE-TEST (Hidden initially) -->
+            <div id="view-intro" class="card hidden text-center">
+                <h2>Chào mừng, <span id="user-name-display" style="color: var(--primary-color)">Bạn</span></h2>
+                <p class="mb-4">Bài test gồm 10 khía cạnh. Mỗi khía cạnh gồm 2 bước:</p>
+                <ul style="text-align: left; margin: 0 auto 2rem; max-width: 320px; color: var(--text-muted);">
+                    <li class="mb-4">Bước 1. Bạn tự đánh giá năng lực bản thân</li>
+                    <li>Bước 2. Đánh giá dựa vào câu hỏi trắc nghiệm thực tế của bạn</li>
+                </ul>
+                <button id="btn-start" class="rating-btn" style="background: var(--primary-color); color: #0f172a;">
+                    Bắt đầu ngay <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <!-- VIEW 3: TEST (Self Assessment) -->
+            <div id="view-self-assess" class="card hidden">
+                <div class="phase-header">
+                    <div class="phase-badge">CÂU HỎI <span id="current-aspect-num">1</span>/10</div>
+                    <h2 class="phase-title" id="current-aspect-name">ĐỘ ỔN ĐỊNH THU NHẬP</h2>
+                    <div class="phase-subtitle">Bước 1: Tự đánh giá năng lực</div>
+                </div>
+
+                <h3 class="question-text">Bản thân bạn đánh giá cảm tính mình được bao nhiêu điểm ở khía cạnh này?</h3>
+
+                <div class="rating-scale">
+                    <button class="rating-btn" data-score="1">1<br><span
+                            style="font-size:0.7rem; font-weight:400">Yếu</span></button>
+                    <button class="rating-btn" data-score="2">2<br><span
+                            style="font-size:0.7rem; font-weight:400">Kém</span></button>
+                    <button class="rating-btn" data-score="3">3<br><span style="font-size:0.7rem; font-weight:400">Trung
+                            bình</span></button>
+                    <button class="rating-btn" data-score="4">4<br><span
+                            style="font-size:0.7rem; font-weight:400">Khá</span></button>
+                    <button class="rating-btn" data-score="5">5<br><span
+                            style="font-size:0.7rem; font-weight:400">Tốt</span></button>
+                </div>
+            </div>
+
+            <!-- VIEW 4: TEST (Quiz) -->
+            <div id="view-quiz" class="card hidden">
+                <div class="phase-header">
+                    <div class="phase-badge">CÂU HỎI <span id="quiz-aspect-num">1</span>/10</div>
+                    <h2 class="phase-title" id="quiz-aspect-name">...</h2>
+                    <div class="phase-subtitle">Bước 2: Trắc nghiệm thực tế</div>
+                </div>
+
+                <h3 id="quiz-question" class="question-text">...</h3>
+
+                <div id="quiz-options" class="options-grid">
+                    <!-- Options injected by JS -->
+                </div>
+            </div>
+
+            <!-- VIEW 5: RESULTS -->
+            <div id="view-result" class="card hidden" style="max-height: 80vh; overflow-y: auto;">
+                <div class="results-header">
+                    <h2>Đơn Thuốc Tài Chính</h2>
+                    <p style="color: var(--text-muted)">Kết quả chẩn đoán của bạn</p>
+                </div>
+
+                <div class="score-summary">
+                    <div class="score-box">
+                        <div class="score-label">Tự đánh giá</div>
+                        <div id="final-self-score" class="score-value">0</div>
+                    </div>
+                    <div class="score-box">
+                        <div class="score-label">Điểm thực tế</div>
+                        <div id="final-actual-score" class="score-value">0</div>
+                    </div>
+                </div>
+
+                <div id="praise-section" class="mb-4">
+                    <h3 style="color: var(--primary-color)"><i class="fa-solid fa-thumbs-up"></i> Điểm Mạnh</h3>
+                    <ul id="praise-list" style="margin-left: 1.5rem; color: var(--text-main);"></ul>
+                </div>
+
+                <div id="weakness-section" class="mb-4">
+                    <h3 style="color: var(--danger-color)"><i class="fa-solid fa-triangle-exclamation"></i> Điểm chưa
+                        tốt</h3>
+                    <ul id="weakness-list-display" style="margin-left: 1.5rem; color: var(--text-main);"></ul>
+                </div>
+
+                <hr style="border-color: var(--surface-border); margin: 1.5rem 0;">
+
+                <div id="completion-message"
+                    style="text-align: center; background: rgba(16, 185, 129, 0.1); border-radius: 16px; padding: 2rem; border: 1px solid rgba(16, 185, 129, 0.2);">
+                    <h3 style="color: var(--primary-color); margin-bottom: 1rem;">
+                        <i class="fa-solid fa-gift"></i> Chúc mừng bạn đã hoàn thành!
+                    </h3>
+                    <p style="margin-bottom: 1.5rem; color: var(--text-main);">
+                        Nếu thấy công cụ này hữu ích, <br>hãy chia sẻ nó đến với bạn bè của mình nhé.
+                    </p>
+                    <div style="background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 8px;">
+                        <i class="fa-solid fa-envelope-open-text"
+                            style="color: var(--accent-color); font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                        <p style="font-weight: 600; color: var(--text-main);">
+                            Vui lòng kiểm tra Email <br>để nhận Báo Cáo Tổng Kết chi tiết.
+                        </p>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">
+                            (Đôi khi email có thể rơi vào mục Spam/Quảng cáo, hãy kiểm tra kỹ nhé!)
+                        </p>
+                    </div>
+                </div>
+
+                <button onclick="location.reload()" class="btn-google"
+                    style="width: 100%; justify-content: center; margin-top: 2rem;">
+                    <i class="fa-solid fa-rotate-right"></i> Làm lại bài test
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
